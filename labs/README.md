@@ -10,16 +10,6 @@ Welcome to the Text Adventure Game development challenge! These labs guide you t
 | [Lab 2](Lab2-Frontend-Application.md)   | The Voice of the Narrator           | Build an interactive text adventure frontend | 1.5-2 hours |
 | [Lab 3](Lab3-Infrastructure-as-Code.md) | The Plane of the Kingdom            | Deploy to Azure using Terraform              | 1.5-2 hours |
 
-## 🎮 The Challenge
-
-Teams will be divided into **two companies**. Before the first challenge, a coin flip determines which team gets to use **GitHub Copilot**.
-
-| Challenge              | Team A                    | Team B                    |
-| ---------------------- | ------------------------- | ------------------------- |
-| Lab 1 (API)            | 🪙 Coin flip determines   | 🪙 Coin flip determines   |
-| Lab 2 (Frontend)       | Roles reversed            | Roles reversed            |
-| Lab 3 (Infrastructure) | ✅ Both teams use Copilot | ✅ Both teams use Copilot |
-
 ## 🛠️ Technology Stack
 
 ### Lab 1: Backend

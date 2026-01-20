@@ -25,7 +25,7 @@ Before starting this lab, ensure you have:
 - [ ] Azure CLI installed (`az --version`)
 - [ ] Terraform installed (`terraform --version`)
 - [ ] The Spec Kit CLI installed
-- [ ] GitHub Copilot access (both teams for this challenge!)
+- [ ] GitHub Copilot access
 
 ---
 

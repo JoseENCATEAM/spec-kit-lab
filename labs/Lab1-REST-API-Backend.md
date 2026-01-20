@@ -24,7 +24,7 @@ Before starting this lab, ensure you have:
 - [ ] Node.js (v18+) or .NET SDK (8.0+) installed
 - [ ] A code editor (VS Code recommended)
 - [ ] Python 3.8+ with `uv` package manager (for Spec Kit CLI)
-- [ ] GitHub Copilot access (for the team with AI assistance)
+- [ ] GitHub Copilot access
 
 ---
 

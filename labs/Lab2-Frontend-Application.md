@@ -24,7 +24,7 @@ Before starting this lab, ensure you have:
 - [ ] Node.js (v18+) installed
 - [ ] The Spec Kit CLI installed (`specify version` to verify)
 - [ ] Your API endpoint URL available
-- [ ] GitHub Copilot access (for the team with AI assistance)
+- [ ] GitHub Copilot access
 
 ---
 
