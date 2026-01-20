@@ -38,7 +38,11 @@
 
   "forwardPorts": [5000, 5001, 3000, 5173],
   
-  "postCreateCommand": "dotnet --version && node --version && npm --version && uv tool install specify-cli --from git+https://github.com/github/spec-kit.git",
+  "postCreateCommand": "curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH=\"$HOME/.local/bin:$PATH\" && uv tool install specify-cli --from git+https://github.com/github/spec-kit.git",
 
-  "remoteUser": "vscode"
+  "remoteUser": "vscode",
+
+  "remoteEnv": {
+    "PATH": "${containerEnv:HOME}/.local/bin:${containerEnv:PATH}"
+  }
 }
