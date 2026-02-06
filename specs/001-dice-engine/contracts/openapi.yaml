@@ -1,0 +1,354 @@
+openapi: 3.0.1
+info:
+  title: Dice Rolling Engine API
+  description: |
+    REST API for rolling dice using standard tabletop RPG notation. 
+    Supports simple dice notation (2d6, 1d20+5), compound expressions (2d6+1d4+3), 
+    and advantage/disadvantage mechanics.
+
+    **Features:**
+    - Standard dice notation (NdX where N=1-1000, X=2-10000)
+    - Arithmetic modifiers (+/-)
+    - Compound expressions with multiple dice groups
+    - Advantage/disadvantage (roll twice, take higher/lower)
+    - Cryptographically secure random number generation
+    - Detailed roll breakdowns (individual dice + totals)
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.example.com
+    description: Production server
+
+tags:
+  - name: Dice
+    description: Dice rolling operations
+
+paths:
+  /api/dice/roll:
+    post:
+      tags:
+        - Dice
+      summary: Roll dice using standard notation
+      description: |
+        Rolls dice based on standard tabletop RPG notation and returns individual 
+        die results plus the calculated total. Supports advantage/disadvantage mechanics.
+
+        **Examples:**
+        - Simple: `2d6` (roll 2 six-sided dice)
+        - Modifier: `1d20+5` (roll d20, add 5)
+        - Compound: `2d6+1d4+3` (roll 2d6, 1d4, add 3)
+        - Advantage: `1d20` with `advantageMode: "advantage"` (roll twice, take higher)
+
+        **Performance:** Response time target <200ms (p95).
+      operationId: rollDice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DiceRollRequest"
+            examples:
+              simple:
+                summary: Simple dice roll
+                value:
+                  expression: "2d6"
+              withModifier:
+                summary: Roll with modifier
+                value:
+                  expression: "1d20+5"
+              compound:
+                summary: Compound expression
+                value:
+                  expression: "2d6+1d4+3"
+              advantage:
+                summary: Roll with advantage
+                value:
+                  expression: "1d20"
+                  advantageMode: "advantage"
+              disadvantage:
+                summary: Roll with disadvantage
+                value:
+                  expression: "1d20+3"
+                  advantageMode: "disadvantage"
+      responses:
+        "200":
+          description: Successful dice roll
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiceRollResponse"
+              examples:
+                simpleRoll:
+                  summary: Simple 2d6 roll
+                  value:
+                    expression: "2d6"
+                    results:
+                      - notation: "2d6"
+                        rolls: [4, 5]
+                        subtotal: 9
+                    modifiers: []
+                    total: 9
+                    advantageMode: "none"
+                    timestamp: "2026-02-06T12:34:56.789Z"
+                compoundRoll:
+                  summary: Compound expression result
+                  value:
+                    expression: "2d6+1d4+3"
+                    results:
+                      - notation: "2d6"
+                        rolls: [4, 5]
+                        subtotal: 9
+                      - notation: "1d4"
+                        rolls: [3]
+                        subtotal: 3
+                    modifiers:
+                      - operator: "+"
+                        value: 3
+                    total: 15
+                    advantageMode: "none"
+                    timestamp: "2026-02-06T12:34:56.789Z"
+                advantageRoll:
+                  summary: Advantage roll (higher selected)
+                  value:
+                    expression: "1d20"
+                    results:
+                      - notation: "1d20"
+                        rolls: [15]
+                        subtotal: 15
+                    modifiers: []
+                    total: 15
+                    advantageMode: "advantage"
+                    alternateRoll:
+                      expression: "1d20"
+                      results:
+                        - notation: "1d20"
+                          rolls: [8]
+                          subtotal: 8
+                      modifiers: []
+                      total: 8
+                      advantageMode: "advantage"
+                      timestamp: "2026-02-06T12:34:56.789Z"
+                    timestamp: "2026-02-06T12:34:56.789Z"
+        "400":
+          description: Invalid dice notation or validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                invalidNotation:
+                  summary: Invalid dice notation
+                  value:
+                    error: "Invalid dice notation"
+                    message: "Expression '2d' is invalid: missing number of sides"
+                    details:
+                      - "Expected format: NdX where N=1-1000, X=2-10000"
+                    timestamp: "2026-02-06T12:34:56.789Z"
+                tooManyDice:
+                  summary: Exceeds resource limits
+                  value:
+                    error: "Resource limit exceeded"
+                    message: "Expression '2000d6' exceeds maximum dice count"
+                    details:
+                      - "Maximum 1000 dice per expression"
+                      - "Current expression has 2000 dice"
+                    timestamp: "2026-02-06T12:34:56.789Z"
+                invalidSides:
+                  summary: Invalid number of sides
+                  value:
+                    error: "Invalid dice notation"
+                    message: "Dice must have at least 2 sides"
+                    details:
+                      - "Expression '2d1' has 1 side (minimum is 2)"
+                    timestamp: "2026-02-06T12:34:56.789Z"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                serverError:
+                  summary: Unexpected server error
+                  value:
+                    error: "Internal server error"
+                    message: "An unexpected error occurred while processing the roll"
+                    details: []
+                    timestamp: "2026-02-06T12:34:56.789Z"
+
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: Returns API health status
+      operationId: healthCheck
+      responses:
+        "200":
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2026-02-06T12:34:56.789Z"
+
+components:
+  schemas:
+    DiceRollRequest:
+      type: object
+      required:
+        - expression
+      properties:
+        expression:
+          type: string
+          description: |
+            Dice notation to roll. Supports standard notation (NdX), modifiers (+/-), 
+            and compound expressions (e.g., 2d6+1d4+3).
+          minLength: 2
+          maxLength: 200
+          pattern: '^[0-9dD+\-\s]+$'
+          example: "2d6+1d4+3"
+        advantageMode:
+          type: string
+          description: |
+            Roll mode for advantage/disadvantage mechanics. 
+            - `none`: Single roll (default)
+            - `advantage`: Roll twice, take higher total
+            - `disadvantage`: Roll twice, take lower total
+          enum:
+            - none
+            - advantage
+            - disadvantage
+          default: none
+          example: "none"
+
+    DiceRollResponse:
+      type: object
+      required:
+        - expression
+        - results
+        - modifiers
+        - total
+        - advantageMode
+        - timestamp
+      properties:
+        expression:
+          type: string
+          description: The original dice expression that was rolled
+          example: "2d6+1d4+3"
+        results:
+          type: array
+          description: Array of roll results, one per dice group
+          items:
+            $ref: "#/components/schemas/RollResult"
+        modifiers:
+          type: array
+          description: Array of arithmetic modifiers applied to the roll
+          items:
+            $ref: "#/components/schemas/Modifier"
+        total:
+          type: integer
+          description: Final calculated total (sum of all subtotals + modifiers)
+          example: 15
+        advantageMode:
+          type: string
+          description: The advantage mode that was applied
+          enum:
+            - none
+            - advantage
+            - disadvantage
+          example: "none"
+        alternateRoll:
+          $ref: "#/components/schemas/DiceRollResponse"
+          description: |
+            Only present when advantage/disadvantage is used. 
+            Contains the alternate roll that was NOT selected.
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the roll was executed
+          example: "2026-02-06T12:34:56.789Z"
+
+    RollResult:
+      type: object
+      required:
+        - notation
+        - rolls
+        - subtotal
+      properties:
+        notation:
+          type: string
+          description: The dice notation for this group (e.g., "2d6")
+          example: "2d6"
+        rolls:
+          type: array
+          description: Individual die values from this roll
+          items:
+            type: integer
+            minimum: 1
+          example: [4, 5]
+        subtotal:
+          type: integer
+          description: Sum of all dice in this group
+          example: 9
+
+    Modifier:
+      type: object
+      required:
+        - operator
+        - value
+      properties:
+        operator:
+          type: string
+          description: Arithmetic operator (+ or -)
+          enum:
+            - "+"
+            - "-"
+          example: "+"
+        value:
+          type: integer
+          description: Numeric value of the modifier
+          example: 3
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - timestamp
+      properties:
+        error:
+          type: string
+          description: Error category or type
+          example: "Invalid dice notation"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Expression '2d' is invalid: missing number of sides"
+        details:
+          type: array
+          description: Additional error details or validation messages
+          items:
+            type: string
+          example:
+            - "Expected format: NdX where N=1-1000, X=2-10000"
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the error occurred
+          example: "2026-02-06T12:34:56.789Z"
